@@ -1,0 +1,586 @@
+/* Custom CSS for Al-Azhar Student Management System */
+
+/* Arabic Font */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+
+:root {
+  --primary-color: #2c6c8b;
+  --secondary-color: #34a853;
+  --accent-color: #ce6714;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --gray-color: #6c757d;
+  --gray-light-color: #e9ecef;
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  --border-radius: 0.5rem;
+  --transition-speed: 0.3s;
+}
+
+body {
+  font-family: 'Tajawal', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f8fa;
+  color: var(--dark-color);
+}
+
+/* Main container */
+.container {
+  max-width: 1200px;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #004d40;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.navbar .container-fluid {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.navbar .navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar .nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.navbar .nav-btn {
+    min-width: 120px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 40px;
+}
+
+.navbar .dropdown-menu {
+    min-width: 200px;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 0.75rem;
+}
+
+.navbar .dropdown-item {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: var(--gray-light-color);
+    transform: translateX(-4px);
+}
+
+.btn-outline-light.nav-btn {
+    border-width: 2px;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    margin: 0.2rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.btn-outline-light.nav-btn:hover,
+.btn-outline-light.nav-btn.active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255,255,255,0.2);
+    background-color: rgba(255,255,255,0.1);
+}
+
+.btn-outline-light.nav-btn.dropdown-toggle::after {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.dropdown-menu {
+    padding: 0.5rem;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    padding: 0.7rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--gray-light-color);
+    transform: translateX(-4px);
+}
+
+.dropdown-item.text-danger:hover {
+    background-color: var(--danger-color);
+    color: white !important;
+}
+
+/* شعارات الأزهر في الشريط العلوي */
+.logo-container {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+
+.logo-container img {
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  padding: 5px;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-family: 'Amiri', serif;
+  font-size: 1.4rem;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+  transition: color 0.2s ease-in-out;
+  position: relative;
+  padding: 0.5rem 1rem;
+  margin: 0 0.2rem;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+  color: white;
+}
+
+.navbar-dark .navbar-nav .nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 5px;
+  left: 50%;
+  background-color: white;
+  transition: all 0.3s ease-in-out;
+  transform: translateX(-50%);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover::after,
+.navbar-dark .navbar-nav .nav-link.active::after {
+  width: 60%;
+}
+
+/* Dashboard cards */
+.card {
+  border-radius: var(--border-radius);
+  border: none;
+  overflow: hidden;
+}
+
+.card-dashboard {
+  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  margin-bottom: 1.5rem;
+  background-color: white;
+  border: none;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.card-dashboard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-dashboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background-color: var(--primary-color);
+}
+
+.card-dashboard .display-4 {
+  margin-bottom: 1rem;
+}
+
+.card-header {
+  background: linear-gradient(to right, rgba(44, 108, 139, 0.05), transparent);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+}
+
+.card-dashboard .card-title {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Student details */
+.student-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #f8f9fa;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.student-info-card {
+  border-radius: 15px;
+}
+
+/* Forms */
+.form-control, .form-select {
+  padding: 0.75rem 1rem;
+  border-radius: 0.4rem;
+  border: 1px solid #dee2e6;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(44, 108, 139, 0.25);
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--dark-color);
+}
+
+.btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.4rem;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #1f5573;
+  border-color: #1f5573;
+}
+
+.btn-success {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-success:hover {
+  background-color: #2d9048;
+  border-color: #2d9048;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Tables */
+.table {
+  vertical-align: middle;
+}
+
+.table-hover tbody tr {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(44, 108, 139, 0.05);
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-top: none;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: var(--primary-color);
+  padding: 0.75rem 1rem;
+}
+
+.results-table th {
+  position: sticky;
+  top: 0;
+  background-color: var(--primary-color);
+  color: white;
+  z-index: 1;
+}
+
+/* Dashboard Quick Access */
+.quick-access-item {
+  transition: all 0.2s ease-in-out;
+  border-radius: var(--border-radius);
+}
+
+.quick-access-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-access-icon {
+  width: 60px;
+  height: 60px;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  background-color: rgba(44, 108, 139, 0.1);
+  color: var(--primary-color);
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-access-item:hover .quick-access-icon {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Footer */
+.footer {
+  margin-top: auto;
+  padding: 1rem 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  color: var(--gray-color);
+}
+
+/* Login Page */
+.login-container {
+  max-width: 450px;
+  margin: 5rem auto;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  background-color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+}
+
+.login-logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 2rem;
+  display: block;
+}
+
+.login-title {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.8em;
+  border-radius: 0.25rem;
+}
+
+.badge-passed {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.badge-failed {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.badge-pending {
+  background-color: var(--warning-color);
+  color: black;
+}
+
+/* RTL specific adjustments */
+.dropdown-menu-end {
+  left: 0;
+  right: auto;
+}
+
+/* Student list filters */
+.filter-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+.filter-title {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+}
+
+.filter-title i {
+  margin-left: 0.5rem;
+}
+
+/* Pagination */
+.pagination {
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.pagination .page-item .page-link {
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.85rem;
+  }
+  
+  .card-dashboard {
+    margin-bottom: 1rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+  
+  .container {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
+
+/* Student details page */
+.student-details-header {
+  background-color: white;
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+}
+
+.student-details-info {
+  margin-right: 2rem;
+}
+
+.student-name {
+  font-family: 'Amiri', serif;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.student-code {
+  color: var(--gray-color);
+  margin-bottom: 1rem;
+}
+
+.student-tabs {
+  margin-bottom: 2rem;
+}
+
+.student-tabs .nav-link {
+  color: var(--dark-color);
+  padding: 1rem 1.5rem;
+  border-radius: 0;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.student-tabs .nav-link.active {
+  color: var(--primary-color);
+  background-color: transparent;
+  border-bottom-color: var(--primary-color);
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    background-color: white;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #dee2e6;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+  }
+}
