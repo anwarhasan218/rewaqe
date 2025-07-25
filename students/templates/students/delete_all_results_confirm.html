@@ -1,0 +1,51 @@
+{% extends 'base_new.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "تأكيد حذف كل النتائج" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">{% trans "تأكيد حذف كل النتائج المفلترة" %}</h4>
+                </div>
+                <div class="card-body">
+                    {% if count > 0 %}
+                        <p class="lead">
+                            {% blocktrans count count=count %}
+                            هل أنت متأكد أنك تريد حذف نتيجة واحدة؟
+                            {% plural %}
+                            هل أنت متأكد أنك تريد حذف كل النتائج المحددة وعددها <strong>{{ count }}</strong> نتيجة؟
+                            {% endblocktrans %}
+                        </p>
+                        <p class="text-danger">
+                            <strong>{% trans "تحذير:" %}</strong> {% trans "سيتم حذف جميع النتائج التي تطابق معايير البحث الحالية نهائياً. لا يمكن التراجع عن هذا الإجراء." %}
+                        </p>
+                        
+                        <form method="post" action="{% url 'students:delete_all_results' %}?{{ filters_query }}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="confirmation" class="form-label">{% trans "للتأكيد، يرجى كتابة 'DELETE_ALL' في المربع أدناه:" %}</label>
+                                <input type="text" id="confirmation" name="confirmation" class="form-control" placeholder="DELETE_ALL" required>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <a href="{% url 'students:results_list' %}?{{ filters_query }}" class="btn btn-secondary me-2">{% trans "إلغاء" %}</a>
+                                <button type="submit" class="btn btn-danger">{% trans "نعم، أحذف كل النتائج المحددة" %}</button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <h4 class="alert-heading">{% trans "لا توجد نتائج للحذف" %}</h4>
+                            <p>{% trans "لم يتم العثور على أي نتائج تطابق معايير البحث المحددة." %}</p>
+                            <hr>
+                            <a href="{% url 'students:results_list' %}" class="btn btn-primary">{% trans "العودة إلى قائمة النتائج" %}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

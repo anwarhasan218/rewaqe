@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}حذف جميع الطلاب - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .danger-zone {
+        border: 2px solid #dc3545;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+        padding: 30px;
+        margin: 20px 0;
+    }
+    
+    .danger-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 20px;
+    }
+    
+    .confirmation-input {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        background-color: #f8f9fa;
+        border: 2px solid #dc3545;
+    }
+    
+    .warning-text {
+        color: #721c24;
+        font-weight: 600;
+    }
+    
+    .stats-card {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 1px solid #ffc107;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        حذف جميع الطلاب
+                    </h2>
+                    <p class="text-muted">منطقة خطر - تعامل بحذر شديد</p>
+                </div>
+                <a href="{% url 'students:student_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة لقائمة الطلاب
+                </a>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="stats-card">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3 class="text-warning mb-0">{{ students_count }}</h3>
+                        <small class="text-muted">إجمالي الطلاب</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-danger mb-0">
+                            <i class="fas fa-trash-alt"></i>
+                        </h3>
+                        <small class="text-muted">سيتم حذفهم</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h3 class="text-success mb-0">
+                            <i class="fas fa-undo"></i>
+                        </h3>
+                        <small class="text-muted">لا يمكن التراجع</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone text-center">
+                <div class="danger-icon">
+                    <i class="fas fa-skull-crossbones"></i>
+                </div>
+                
+                <h3 class="text-danger mb-3">⚠️ تحذير شديد ⚠️</h3>
+                
+                <div class="warning-text mb-4">
+                    <p class="mb-2">أنت على وشك حذف <strong>جميع الطلاب</strong> من النظام!</p>
+                    <p class="mb-2">هذا الإجراء سيؤدي إلى:</p>
+                    <ul class="list-unstyled">
+                        <li>🗑️ حذف جميع بيانات الطلاب ({{ students_count }} طالب)</li>
+                        <li>📊 حذف جميع النتائج والدرجات المرتبطة</li>
+                        <li>📋 حذف جميع النتائج النهائية</li>
+                        <li>❌ <strong>لا يمكن التراجع عن هذا الإجراء</strong></li>
+                    </ul>
+                </div>
+
+                {% if students_count > 0 %}
+                <form method="post" id="deleteAllForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="password_confirmation" class="form-label warning-text">
+                            للتأكيد، اكتب النص التالي بالضبط:
+                        </label>
+                        <div class="text-center mb-3">
+                            <code class="bg-dark text-light p-2 rounded">DELETE_ALL_STUDENTS</code>
+                        </div>
+                        <input 
+                            type="text" 
+                            name="password_confirmation" 
+                            id="password_confirmation"
+                            class="form-control confirmation-input text-center"
+                            placeholder="اكتب النص هنا..."
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button 
+                            type="submit" 
+                            class="btn btn-danger btn-lg me-md-2"
+                            id="deleteButton"
+                            disabled
+                        >
+                            <i class="fas fa-trash-alt"></i>
+                            حذف جميع الطلاب نهائياً
+                        </button>
+                        <a href="{% url 'students:student_list' %}" class="btn btn-success btn-lg">
+                            <i class="fas fa-times"></i>
+                            إلغاء العملية
+                        </a>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    لا يوجد طلاب في النظام للحذف
+                </div>
+                <a href="{% url 'students:student_list' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة لقائمة الطلاب
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmationInput = document.getElementById('password_confirmation');
+    const deleteButton = document.getElementById('deleteButton');
+    const deleteForm = document.getElementById('deleteAllForm');
+    
+    // تفعيل/تعطيل زر الحذف بناءً على النص المدخل
+    confirmationInput.addEventListener('input', function() {
+        if (this.value === 'DELETE_ALL_STUDENTS') {
+            deleteButton.disabled = false;
+            deleteButton.classList.remove('btn-danger');
+            deleteButton.classList.add('btn-outline-danger');
+        } else {
+            deleteButton.disabled = true;
+            deleteButton.classList.remove('btn-outline-danger');
+            deleteButton.classList.add('btn-danger');
+        }
+    });
+    
+    // تأكيد إضافي عند الإرسال
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            const confirmation = confirm(
+                'هل أنت متأكد تماماً من حذف جميع الطلاب؟\n\n' +
+                'هذا الإجراء لا يمكن التراجع عنه!\n\n' +
+                'اضغط "موافق" للمتابعة أو "إلغاء" للتوقف.'
+            );
+            
+            if (!confirmation) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // تأكيد نهائي
+            const finalConfirmation = confirm(
+                'التأكيد النهائي!\n\n' +
+                'سيتم حذف {{ students_count }} طالب نهائياً.\n\n' +
+                'هل تريد المتابعة؟'
+            );
+            
+            if (!finalConfirmation) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

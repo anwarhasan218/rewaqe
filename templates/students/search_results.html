@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}نتائج البحث - نظام إدارة طلاب رواق العلوم الشرعية والعربية{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-0 text-primary fw-bold">
+                <i class="fas fa-search me-2"></i>نتائج البحث
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">نتائج البحث</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'students:dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <form method="get" action="/students/search/" class="mb-0">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                            <input type="text" name="q" class="form-control" placeholder="بحث باسم الطالب أو الكود أو رقم الجلوس أو الرقم القومي" value="{{ query }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">بحث</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    {% if students is not None %}
+        {% if students %}
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>نتائج البحث ({{ students.count }})</h5>
+                    {% if students.count > 0 %}
+                    <div>
+                        <a href="{% url 'students:export_students' %}?search={{ query|urlencode }}" class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-file-excel me-1"></i> تصدير النتائج
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>رقم الجلوس</th>
+                                    <th>الاسم</th>
+                                    <th>المرحلة</th>
+                                    <th>المستوى</th>
+                                    <th>حالة القيد</th>
+                                    <th class="text-center">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ student.code }}</td>
+                                    <td>{{ student.current_seat_number }}</td>
+                                    <td>{{ student.full_name }}</td>
+                                    <td>{{ student.level.stage.name }}</td>
+                                    <td>{{ student.level.name }}</td>
+                                    <td>
+                                        <span class="badge {% if student.enrollment_status == 'مقيد' %}bg-success{% elif student.enrollment_status == 'منقول' %}bg-primary{% elif student.enrollment_status == 'منقول بمواد' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ student.enrollment_status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'students:student_detail' student.id %}" class="btn btn-info" data-bs-toggle="tooltip" title="عرض التفاصيل">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'students:student_edit' student.id %}" class="btn btn-warning" data-bs-toggle="tooltip" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'students:print_certificate' student.id %}" class="btn btn-primary" data-bs-toggle="tooltip" title="طباعة إفادة">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                            <a href="{% url 'students:export_student_results' student.id %}" class="btn btn-success" data-bs-toggle="tooltip" title="كشف درجات">
+                                                <i class="fas fa-file-alt"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                لا توجد نتائج مطابقة لـ "{{ query }}". يرجى تجربة كلمات بحث أخرى.
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-secondary text-center">
+            <i class="fas fa-search me-2"></i>
+            أدخل كلمات البحث للعثور على الطلاب.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}رفع النتائج الشاملة بالجملة - نظام إدارة طلاب رواق العلوم الشرعية والعربية{% endblock %}
+
+{% block extra_css %}
+<style>
+.upload-area {
+    border: 2px dashed #007bff;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #0056b3;
+    background-color: #e3f2fd;
+}
+
+.upload-area.dragover {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+
+.file-info {
+    background-color: #e9ecef;
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.step-card {
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.step-number {
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-left: 10px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-0 text-primary fw-bold">
+                <i class="fas fa-upload me-2"></i>رفع النتائج الشاملة بالجملة
+            </h1>
+            {% if df_columns %}
+            <div class="alert alert-warning mt-3">
+                <b>الأعمدة الموجودة فعليًا في الملف:</b>
+                <span dir="ltr">{{ df_columns|join:', ' }}</span>
+            </div>
+            {% endif %}
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'students:results_list' %}">النتائج النهائية</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">رفع النتائج الشاملة</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- خطوات الاستخدام -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>خطوات رفع النتائج الشاملة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="step-card">
+                                <span class="step-number">1</span>
+                                <strong>اختر المستوى والدفعة</strong>
+                                <p class="mb-0 mt-2">حدد المستوى الدراسي والدفعة والعام الدراسي</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="step-card">
+                                <span class="step-number">2</span>
+                                <strong>حمل النموذج</strong>
+                                <p class="mb-0 mt-2">اضغط "تحميل نموذج" للحصول على ملف Excel فارغ</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="step-card">
+                                <span class="step-number">3</span>
+                                <strong>املأ البيانات</strong>
+                                <p class="mb-0 mt-2">أدخل درجات جميع المواد لكل طالب في الملف</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="step-card">
+                                <span class="step-number">4</span>
+                                <strong>ارفع الملف</strong>
+                                <p class="mb-0 mt-2">ارفع الملف المكتمل وسيتم حساب النتائج تلقائياً</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج الرفع -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-upload me-2"></i>رفع ملف النتائج
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.level.id_for_label }}" class="form-label">{{ form.level.label }}</label>
+                                {{ form.level }}
+                                {% if form.level.errors %}
+                                    <div class="text-danger small">{{ form.level.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.batch.id_for_label }}" class="form-label">{{ form.batch.label }}</label>
+                                {{ form.batch }}
+                                {% if form.batch.errors %}
+                                    <div class="text-danger small">{{ form.batch.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <a href="?export_template=1" class="btn btn-outline-success" id="downloadTemplate">
+                                    <i class="fas fa-download me-1"></i>تحميل نموذج Excel
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.results_file.id_for_label }}" class="form-label">{{ form.results_file.label }}</label>
+                            <div class="upload-area" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5>اسحب وأفلت ملف Excel هنا</h5>
+                                <p class="text-muted">أو اضغط لاختيار الملف</p>
+                                {{ form.results_file }}
+                                <div class="file-info" id="fileInfo" style="display: none;">
+                                    <i class="fas fa-file-excel text-success me-2"></i>
+                                    <span id="fileName"></span>
+                                    <span class="badge bg-success ms-2" id="fileSize"></span>
+                                </div>
+                            </div>
+                            {% if form.results_file.errors %}
+                                <div class="text-danger small mt-2">{{ form.results_file.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'students:results_list' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-upload me-1"></i>رفع النتائج
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ملاحظات مهمة -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>ملاحظات مهمة:</h6>
+                <ul class="mb-0">
+                    <li>يجب أن يحتوي الملف على عمود "كود الطالب" وأعمدة لجميع مواد المستوى</li>
+                    <li>الدرجات يجب أن تكون أرقام صحيحة بين 0 والدرجة النهائية للمادة</li>
+                    <li>إذا أدخلت <b>غـ</b> أو أي نص غير رقمي في خانة الدرجة، سيتم اعتبار الطالب <b>غائب</b> ويعتبر <b>راسب</b> في المادة تلقائياً</li>
+                    <li>سيتم حساب النتيجة النهائية تلقائياً بناءً على الدرجات المدخلة</li>
+                    <li>في حالة وجود أخطاء، سيتم عرضها وتجاهل الصفوف التي تحتوي على أخطاء</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('{{ form.results_file.id_for_label }}');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const downloadTemplate = document.getElementById('downloadTemplate');
+    const levelSelect = document.getElementById('{{ form.level.id_for_label }}');
+
+    // تحديث رابط تحميل النموذج
+    function updateTemplateLink() {
+        const level = levelSelect.value;
+        if (level) {
+            downloadTemplate.href = `?export_template=1&level=${level}`;
+            downloadTemplate.classList.remove('disabled');
+        } else {
+            downloadTemplate.classList.add('disabled');
+        }
+    }
+
+    levelSelect.addEventListener('change', updateTemplateLink);
+
+    // معالجة رفع الملفات
+    uploadArea.addEventListener('click', function(e) {
+        // لا تفتح نافذة اختيار الملف إذا كان الضغط على عنصر input نفسه
+        if (e.target === fileInput) return;
+        fileInput.click();
+    });
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            showFileInfo(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            showFileInfo(e.target.files[0]);
+        }
+    });
+
+    function showFileInfo(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.style.display = 'block';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // التحقق من النموذج قبل الإرسال
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const level = levelSelect.value;
+        const batch = document.getElementById('{{ form.batch.id_for_label }}').value;
+        const file = fileInput.files[0];
+
+        if (!level || !batch || !file) {
+            e.preventDefault();
+            alert('يرجى ملء جميع الحقول واختيار ملف');
+            return false;
+        }
+
+        // تعطيل زر الإرسال لمنع الإرسال المتكرر
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الرفع...';
+    });
+});
+</script>
+{% endblock %}
+

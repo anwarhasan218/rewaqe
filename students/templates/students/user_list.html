@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-center">إدارة المستخدمين</h2>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-left">
+            <a href="{% url 'students:user_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة مستخدم جديد
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>اسم المستخدم</th>
+                            <th>الاسم الكامل</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الدور</th>
+                            <th>المحافظة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.get_full_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.get_role_display }}</td>
+                            <td>{{ user.governorate|default:'-' }}</td>
+                            <td>
+                                <a href="{% url 'students:user_update' user.pk %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-edit"></i> تعديل
+                                </a>
+                                <a href="{% url 'students:user_delete' user.pk %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> حذف
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">لا يوجد مستخدمين</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // تفعيل tooltips
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+{% endblock %}

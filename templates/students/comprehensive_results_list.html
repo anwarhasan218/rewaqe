@@ -1,0 +1,511 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}النتائج الشاملة - نظام إدارة طلاب رواق العلوم الشرعية والعربية{% endblock %}
+
+{% block extra_css %}
+<style>
+.results-table {
+    font-size: 12px;
+}
+
+.results-table th,
+.results-table td {
+    padding: 8px 4px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+
+.results-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.student-name {
+    text-align: right !important;
+    font-weight: bold;
+    min-width: 150px;
+}
+
+.course-score {
+    min-width: 60px;
+    font-weight: bold;
+}
+
+.result-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+}
+
+.failed-courses {
+    font-size: 10px;
+    color: #dc3545;
+    font-style: italic;
+}
+
+.table-container {
+    overflow-x: auto;
+    max-height: 70vh;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.filter-card {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    margin: 5px;
+}
+
+.export-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.course-header {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 12px;
+    padding: 8px 4px;
+    min-width: 80px;
+}
+
+.course-score {
+    text-align: center;
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.score-excellent { color: #28a745; }
+.score-good { color: #007bff; }
+.score-acceptable { color: #17a2b8; }
+.score-weak { color: #ffc107; }
+.score-fail { color: #dc3545; }
+.score-absent { color: #6c757d; }
+
+.percentage-cell {
+    font-weight: bold;
+    color: #007bff;
+    font-size: 14px;
+}
+
+.total-score-cell {
+    font-weight: bold;
+    color: #28a745;
+    font-size: 14px;
+    background-color: #f8f9fa;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .results-table {
+        font-size: 10px;
+    }
+
+    .table-container {
+        max-height: none;
+        overflow: visible;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4 no-print">
+        <div class="col-md-8">
+            <h1 class="h2 mb-0 text-primary fw-bold">
+                <i class="fas fa-chart-line me-2"></i>النتائج الشاملة
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">النتائج الشاملة</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a href="{% url 'students:bulk_upload_comprehensive_results' %}" class="btn btn-success">
+                    <i class="fas fa-upload me-1"></i>{% trans "رفع النتائج" %}
+                </a>
+                <a href="{% url 'students:bulk_delete_results' %}" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-1"></i> {% trans "حذف بالجملة" %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row no-print">
+        <div class="col-12">
+            <div class="filter-card">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="level" class="form-label">المستوى</label>
+                        <select name="level" id="level" class="form-select">
+                            <option value="">جميع المستويات</option>
+                            {% for level in levels %}
+                                <option value="{{ level.id }}" {% if request.GET.level == level.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ level.stage.name }} - {{ level.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="batch" class="form-label">الدفعة</label>
+                        <select name="batch" id="batch" class="form-select">
+                            <option value="">جميع الدفعات</option>
+                            {% for batch in batches %}
+                                <option value="{{ batch.id }}" {% if request.GET.batch == batch.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ batch.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">النتيجة</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">جميع النتائج</option>
+                            {% for status in result_statuses %}
+                                <option value="{{ status.0 }}" {% if request.GET.status == status.0 %}selected{% endif %}>
+                                    {{ status.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="q" class="form-label">البحث</label>
+                        <input type="text" name="q" id="q" class="form-control" placeholder="اسم الطالب..." value="{{ request.GET.q }}">
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    {% if results %}
+    <div class="row no-print">
+        <div class="col-12">
+            <div class="stats-card">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <h4>{{ results|length }}</h4>
+                        <small>إجمالي النتائج</small>
+                    </div>
+                    <div class="col-md-2">
+                        <h4>{{ results|length }}</h4>
+                        <small>الطلاب</small>
+                    </div>
+                    {% if results_with_scores %}
+                    <div class="col-md-2">
+                        <h4>{{ results_with_scores.0.course_scores|length }}</h4>
+                        <small>المواد</small>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-6 text-end">
+                        {% if current_level_id %}
+                        <a href="{% url 'students:export_comprehensive_results' current_level_id %}?batch={{ request.GET.batch }}"
+                           class="export-btn">
+                            <i class="fas fa-download me-1"></i>تصدير Excel
+                        </a>
+                        <button onclick="window.print()" class="export-btn">
+                            <i class="fas fa-print me-1"></i>طباعة
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Results Table -->
+    {% if results_with_scores %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <div class="row text-center">
+                <div class="col-md-2">
+                    <h4>{{ results|length }}</h4>
+                    <small>إجمالي النتائج</small>
+                </div>
+                <div class="col-md-2">
+                    <h4>{{ results|length }}</h4>
+                    <small>الطلاب</small>
+                </div>
+                {% if results_with_scores %}
+                <div class="col-md-2">
+                    <h4>{{ results_with_scores.0.course_scores|length }}</h4>
+                    <small>المواد</small>
+                </div>
+                {% endif %}
+                <div class="col-md-6 text-end">
+                    {% if current_level_id %}
+                    <a href="{% url 'students:export_comprehensive_results' current_level_id %}?batch={{ request.GET.batch }}"
+                       class="export-btn">
+                        <i class="fas fa-download me-1"></i>تصدير Excel
+                    </a>
+                    <button onclick="window.print()" class="export-btn">
+                        <i class="fas fa-print me-1"></i>طباعة
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table class="table table-bordered results-table mb-0">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">م</th>
+                            <th rowspan="2">اسم الطالب</th>
+                            <th rowspan="2">الكود</th>
+                            {% if results_with_scores %}
+                                <th colspan="{{ results_with_scores.0.course_scores|length }}">المواد والدرجات</th>
+                            {% endif %}
+                            <th rowspan="2">المجموع الكلي</th>
+                            <th rowspan="2">النسبة المئوية</th>
+                            <th rowspan="2">النتيجة النهائية</th>
+                            <th rowspan="2">مواد الرسوب</th>
+                            <th rowspan="2">طباعة</th>
+                        </tr>
+                        <tr>
+                            {% if results_with_scores %}
+                                {% for score_data in results_with_scores.0.course_scores %}
+                                    <th class="course-header">
+                                        {{ score_data.course.name }}<br>
+                                        <small>({{ score_data.course.max_score }})</small>
+                                    </th>
+                                {% endfor %}
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student_data in results_with_scores %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="student-name">{{ student_data.result.student.full_name }}</td>
+                            <td>{{ student_data.result.student.code }}</td>
+
+                            {% for score_data in student_data.course_scores %}
+                                <td class="course-score {{ score_data.class }}">
+                                    <div>{{ score_data.score }}</div>
+                                    <small class="d-block">{{ score_data.status }}</small>
+                                </td>
+                            {% endfor %}
+
+                            <td class="total-score-cell">{{ student_data.total_score }}</td>
+
+                            <td class="percentage-cell">{{ student_data.percentage }}%</td>
+
+                            <td>
+                                <span class="badge result-badge
+                                    {% if student_data.result.result == 'ناجح ومنقول' or student_data.result.result == 'ناجح' %}bg-success
+                                    {% elif student_data.result.result == 'ناجح بمواد' or student_data.result.result == 'منقول بمواد' %}bg-warning text-dark
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ student_data.result.result }}
+                                </span>
+                            </td>
+
+                            <td class="failed-courses">
+                                {% if student_data.failed_courses %}
+                                    {% for course in student_data.failed_courses %}
+                                        <span class="badge bg-danger me-1">{{ course }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'students:print_student_result' pk=student_data.result.student.pk %}?level={{ student_data.result.level.id }}&batch={{ student_data.result.batch.id }}" class="btn btn-sm btn-outline-primary" title="{% trans 'طباعة' %}">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{% url 'students:result_delete' pk=student_data.result.pk %}" class="btn btn-sm btn-outline-danger" title="{% trans 'حذف' %}">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="row mt-4 no-print">
+        <div class="col-12">
+            <nav aria-label="نتائج الصفحات">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">السابق</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">التالي</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif results %}
+    <!-- No detailed results but basic results exist -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>عرض مبسط للنتائج</h5>
+                <p>لعرض النتائج التفصيلية مع درجات المواد، يرجى اختيار المستوى والدفعة من الفلاتر أعلاه.</p>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>م</th>
+                            <th>اسم الطالب</th>
+                            <th>الكود</th>
+                            <th>المستوى</th>
+                            <th>الدفعة</th>
+                            <th>المجموع الكلي</th>
+                            <th>النتيجة النهائية</th>
+                            <th>{% trans "الإجراءات" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in results %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ result.student.full_name }}</td>
+                            <td>{{ result.student.code }}</td>
+                            <td>{{ result.level.name }}</td>
+                            <td>{{ result.batch.name }}</td>
+                            <td>{{ result.total_score }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if result.result == 'ناجح ومنقول' or result.result == 'ناجح' %}bg-success
+                                    {% elif result.result == 'ناجح بمواد' or result.result == 'منقول بمواد' %}bg-warning text-dark
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ result.result }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'students:print_student_result' pk=result.student.pk %}?level={{ result.level.id }}&batch={{ result.batch.id }}" class="btn btn-sm btn-outline-primary" title="{% trans 'طباعة' %}">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{% url 'students:result_delete' pk=result.pk %}" class="btn btn-sm btn-outline-danger" title="{% trans 'حذف' %}">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No results found -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">لا توجد نتائج</h4>
+                <p class="text-muted">لم يتم العثور على نتائج تطابق معايير البحث المحددة.</p>
+                <a href="{% url 'students:bulk_upload_comprehensive_results' %}" class="btn btn-primary">
+                    <i class="fas fa-upload me-1"></i>رفع النتائج الآن
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form when filters change
+    const filterInputs = document.querySelectorAll('#level, #batch, #status');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+
+    // Highlight search term
+    const searchTerm = '{{ request.GET.q }}';
+    if (searchTerm) {
+        const studentNames = document.querySelectorAll('.student-name');
+        studentNames.forEach(name => {
+            const text = name.textContent;
+            const highlightedText = text.replace(
+                new RegExp(searchTerm, 'gi'),
+                '<mark>$&</mark>'
+            );
+            name.innerHTML = highlightedText;
+        });
+    }
+});
+</script>
+{% endblock %}

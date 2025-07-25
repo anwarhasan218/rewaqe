@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}استيراد بيانات الطلاب - نظام إدارة طلاب رواق العلوم الشرعية والعربية{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-0 text-primary fw-bold">
+                <i class="fas fa-file-upload me-2"></i>استيراد بيانات الطلاب
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'students:student_list' %}">قائمة الطلاب</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">استيراد بيانات</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'students:student_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i> العودة لقائمة الطلاب
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-upload me-2"></i>رفع ملف بيانات الطلاب</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>إرشادات الاستيراد</h5>
+                            <p>يرجى التأكد من أن ملف الإكسل يحتوي على الأعمدة التالية:</p>
+                            <ul>
+                                <li><strong>كود الطالب</strong> - (مطلوب)</li>
+                                <li><strong>الاسم</strong> - الاسم الرباعي للطالب (مطلوب)</li>
+                                <li><strong>النوع</strong> - ذكر أو أنثى (مطلوب)</li>
+                                <li><strong>رقم الجلوس</strong> - رقم جلوس الطالب الحالي (مطلوب)</li>
+                                <li><strong>الرقم القومي</strong> - الرقم القومي للطالب (مطلوب)</li>
+                                <li><strong>المرحلة</strong> - المرحلة الدراسية (مطلوب)</li>
+                                <li><strong>المستوى</strong> - المستوى الدراسي (مطلوب)</li>
+                                <li><strong>المحافظة</strong> - محافظة الطالب (اختياري)</li>
+                                <li><strong>رقم الهاتف</strong> - رقم هاتف الطالب (اختياري)</li>
+                                <li><strong>المذهب</strong> - المذهب الفقهي للطالب (اختياري)</li>
+                                <li><strong>نوع الدراسة</strong> - مباشر أو عن بعد (اختياري)</li>
+                                <li><strong>حالة القيد</strong> - حالة قيد الطالب (اختياري)</li>
+                            </ul>
+                        </div>
+                        
+                        {{ form|crispy }}
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>استيراد البيانات
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-download me-2"></i>تنزيل قالب الاستيراد</h5>
+                </div>
+                <div class="card-body">
+                    <p>يمكنك تنزيل قالب جاهز لاستيراد بيانات الطلاب:</p>
+                    <div class="d-grid">
+                        <a href="{% url 'students:export_students' %}?template=true" class="btn btn-outline-primary">
+                            <i class="fas fa-file-excel me-2"></i>تنزيل قالب الاستيراد
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>ملاحظات هامة</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        <li>يجب أن يكون الملف بصيغة Excel (.xlsx)</li>
+                        <li>الأعمدة التي تحمل علامة (مطلوب) يجب أن تكون موجودة</li>
+                        <li>إذا كان الطالب موجود مسبقاً، سيتم تحديث بياناته فقط إذا اخترت خيار "تحديث بيانات الطلاب الموجودين"</li>
+                        <li>تأكد من أن أسماء المراحل والمستويات مطابقة لما هو موجود في النظام</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

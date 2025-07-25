@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ student.full_name }} - تفاصيل الطالب{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">الرئيسية</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'students:student_list' %}">الطلاب</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ student.full_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="student-details-header">
+    <div class="text-center me-4">
+        {% if student.gender == 'ذكر' %}
+            <img src="{% static 'img/male-student.png' %}" alt="{{ student.full_name }}" class="student-avatar">
+        {% else %}
+            <img src="{% static 'img/female-student.png' %}" alt="{{ student.full_name }}" class="student-avatar">
+        {% endif %}
+    </div>
+    <div class="student-details-info flex-grow-1">
+        <h1 class="student-name">{{ student.full_name }}</h1>
+        <p class="student-code mb-3">
+            <span class="badge bg-primary me-2">{{ student.code }}</span>
+            <span class="badge bg-secondary me-1">{{ student.level.stage.name }}</span>
+            <span class="badge bg-secondary me-1">{{ student.level.name }}</span>
+            {% if student.level.specialization %}
+                <span class="badge bg-info text-dark">{{ student.level.specialization }}</span>
+            {% endif %}
+        </p>
+        <div class="row g-3">
+            <div class="col-md-4 col-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-id-card text-primary me-2"></i>
+                    <span class="text-muted me-2">رقم الجلوس:</span>
+                    <strong>{{ student.current_seat_number }}</strong>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-venus-mars text-primary me-2"></i>
+                    <span class="text-muted me-2">النوع:</span>
+                    <strong>{{ student.gender }}</strong>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-fingerprint text-primary me-2"></i>
+                    <span class="text-muted me-2">الرقم القومي:</span>
+                    <strong>{{ student.national_id }}</strong>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-phone text-primary me-2"></i>
+                    <span class="text-muted me-2">الهاتف:</span>
+                    <strong>{{ student.phone_number }}</strong>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-book text-primary me-2"></i>
+                    <span class="text-muted me-2">المذهب:</span>
+                    <strong>{{ student.madhhab }}</strong>
+                </div>
+            </div>
+            <div class="col-md-4 col-6">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-graduation-cap text-primary me-2"></i>
+                    <span class="text-muted me-2">حالة القيد:</span>
+                    <strong>
+                        {% if student.enrollment_status == 'مستجد' %}
+                            <span class="badge bg-success">{{ student.enrollment_status }}</span>
+                        {% elif student.enrollment_status == 'منقول' %}
+                            <span class="badge bg-info text-dark">{{ student.enrollment_status }}</span>
+                        {% elif student.enrollment_status == 'منقول بمواد' %}
+                            <span class="badge bg-warning text-dark">{{ student.enrollment_status }}</span>
+                        {% elif student.enrollment_status == 'باقي للإعادة' %}
+                            <span class="badge bg-danger">{{ student.enrollment_status }}</span>
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-md-end text-center mt-3 mt-md-0">
+        <div class="col-md-4 text-md-end">
+            <div class="btn-group">
+                <a href="{% url 'students:student_edit' student.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </a>
+                <a href="{% url 'students:print_certificate' student.id %}" class="btn btn-outline-success">
+                    <i class="fas fa-print"></i> طباعة إفادة قيد
+                </a>
+                <a href="{% url 'students:export_student_results' student.id %}" class="btn btn-outline-info">
+                    <i class="fas fa-file-alt"></i> كشف درجات
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<ul class="nav nav-tabs student-tabs" id="studentTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab" aria-controls="results" aria-selected="true">
+            <i class="fas fa-clipboard-list me-1"></i> نتائج المواد
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="finalResults-tab" data-bs-toggle="tab" data-bs-target="#finalResults" type="button" role="tab" aria-controls="finalResults" aria-selected="false">
+            <i class="fas fa-certificate me-1"></i> النتائج النهائية
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="studentTabsContent">
+    <div class="tab-pane fade show active" id="results" role="tabpanel" aria-labelledby="results-tab">
+        <div class="card border-0 shadow-sm mt-4 mb-5">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    نتائج الطالب في المواد
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">العام الدراسي</th>
+                                <th>المادة</th>
+                                <th>الدرجة</th>
+                                <th>الدرجة النهائية</th>
+                                <th>درجة النجاح</th>
+                                <th>النتيجة</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in course_results %}
+                            <tr>
+                                <td class="ps-4">{{ result.academic_year }}</td>
+                                <td>{{ result.course.name }}</td>
+                                <td>{{ result.score }}</td>
+                                <td>{{ result.course.max_score }}</td>
+                                <td>{{ result.course.pass_score }}</td>
+                                <td>
+                                    {% if result.passed %}
+                                        <span class="badge bg-success">ناجح</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">راسب</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-muted">نظام قديم</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">لا توجد نتائج مسجلة بعد</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="finalResults" role="tabpanel" aria-labelledby="finalResults-tab">
+        <div class="card border-0 shadow-sm mt-4 mb-5">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-certificate me-2"></i>
+                    النتائج النهائية للطالب
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">العام الدراسي</th>
+                                <th>المرحلة</th>
+                                <th>المستوى</th>
+                                <th>النتيجة</th>
+                                <th>المواد المتبقية</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in final_results %}
+                            <tr>
+                                <td class="ps-4">{{ result.academic_year }}</td>
+                                <td>{{ result.level.stage.name }}</td>
+                                <td>{{ result.level.name }}</td>
+                                <td>
+                                    {% if result.result == 'ناجح' or result.result == 'ناجح ومنقول' %}
+                                        <span class="badge bg-success">{{ result.result }}</span>
+                                    {% elif result.result == 'منقول بمواد' %}
+                                        <span class="badge bg-warning text-dark">{{ result.result }}</span>
+                                    {% elif result.result == 'باقي للإعادة' %}
+                                        <span class="badge bg-danger">{{ result.result }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if result.failed_courses.all %}
+                                        {% for course in result.failed_courses.all %}
+                                            <span class="badge bg-light text-dark me-1 mb-1">{{ course.name }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">لا توجد نتائج نهائية مسجلة بعد</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

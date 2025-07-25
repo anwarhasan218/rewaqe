@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}حذف الدفعة{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'students:batch_list' %}">إدارة الدفعات</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">حذف الدفعة</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Confirmation -->
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> تأكيد حذف الدفعة
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>تحذير!</strong> هذا الإجراء لا يمكن التراجع عنه.
+                    </div>
+                    
+                    <p class="mb-3">هل أنت متأكد من رغبتك في حذف الدفعة التالية؟</p>
+                    
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ object.name }}</h6>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <small class="text-muted">تاريخ البداية:</small><br>
+                                    {% if object.start_date %}
+                                        {{ object.start_date|date:"Y-m-d" }}
+                                    {% else %}
+                                        <span class="text-muted">غير محدد</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted">تاريخ النهاية:</small><br>
+                                    {% if object.end_date %}
+                                        {{ object.end_date|date:"Y-m-d" }}
+                                    {% else %}
+                                        <span class="text-muted">غير محدد</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">عدد الطلاب المرتبطين:</small>
+                                <span class="badge bg-info">{{ object.student_set.count }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if object.student_set.count > 0 %}
+                    <div class="alert alert-danger mt-3">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>تنبيه:</strong> هناك {{ object.student_set.count }} طالب مرتبط بهذه الدفعة. 
+                        حذف الدفعة سيؤثر على بيانات هؤلاء الطلاب.
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'students:batch_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i> إلغاء
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> تأكيد الحذف
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

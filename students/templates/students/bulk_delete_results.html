@@ -1,0 +1,124 @@
+{% extends 'base_new.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "حذف النتائج بالجملة" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">{% trans "حذف النتائج بالجملة" %}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        {% trans "اختر المرحلة والمستوى والدفعة لحذف جميع نتائجهم بشكل نهائي." %}
+                    </p>
+                    <p class="text-danger">
+                        <strong>{% trans "تحذير خطير:" %}</strong> {% trans "هذا الإجراء سيقوم بحذف جميع النتائج المسجلة للخيارات المحددة. لا يمكن التراجع عن هذا الإجراء." %}
+                    </p>
+                    
+                    <form method="post" id="deleteForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="stage" class="form-label">{% trans "المرحلة" %}</label>
+                            <select id="stage" name="stage" class="form-select" required>
+                                <option value="">{% trans "--- اختر المرحلة ---" %}</option>
+                                {% for stage in stages %}
+                                    <option value="{{ stage.id }}">{{ stage.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="level" class="form-label">{% trans "المستوى" %}</label>
+                            <select id="level" name="level" class="form-select" required disabled>
+                                <option value="">{% trans "--- اختر المرحلة أولاً ---" %}</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="batch" class="form-label">{% trans "الدفعة" %}</label>
+                            <select id="batch" name="batch" class="form-select" required>
+                                <option value="">{% trans "--- اختر الدفعة ---" %}</option>
+                                {% for batch in batches %}
+                                    <option value="{{ batch.id }}">{{ batch.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div id="confirmationSection" class="mb-3" style="display: none;">
+                            <label for="confirmation" class="form-label">
+                                {% trans "للتأكيد، يرجى كتابة النص التالي:" %} <strong id="confirmationText"></strong>
+                            </label>
+                            <input type="text" id="confirmation" name="confirmation" class="form-control" required>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'students:results_list' %}" class="btn btn-secondary me-2">{% trans "إلغاء" %}</a>
+                            <button type="submit" id="deleteButton" class="btn btn-danger" disabled>{% trans "حذف النتائج المحددة" %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stageSelect = document.getElementById('stage');
+    const levelSelect = document.getElementById('level');
+    const batchSelect = document.getElementById('batch');
+    const confirmationSection = document.getElementById('confirmationSection');
+    const confirmationText = document.getElementById('confirmationText');
+    const confirmationInput = document.getElementById('confirmation');
+    const deleteButton = document.getElementById('deleteButton');
+
+    function checkSelections() {
+        const levelId = levelSelect.value;
+        const batchId = batchSelect.value;
+
+        if (levelId && batchId) {
+            const requiredText = `DELETE_${levelId}_${batchId}`;
+            confirmationText.textContent = requiredText;
+            confirmationSection.style.display = 'block';
+            confirmationInput.placeholder = requiredText;
+            
+            if (confirmationInput.value === requiredText) {
+                deleteButton.disabled = false;
+            } else {
+                deleteButton.disabled = true;
+            }
+        } else {
+            confirmationSection.style.display = 'none';
+            deleteButton.disabled = true;
+        }
+    }
+
+    stageSelect.addEventListener('change', function() {
+        const stageId = this.value;
+        levelSelect.disabled = true;
+        levelSelect.innerHTML = '<option value="">{% trans "جاري التحميل..." %}</option>';
+        confirmationInput.value = '';
+        checkSelections();
+
+        if (stageId) {
+            fetch(`{% url 'students:ajax_load_levels' %}?stage_id=${stageId}`)
+                .then(response => response.text())
+                .then(data => {
+                    levelSelect.innerHTML = '<option value="">{% trans "--- اختر المستوى ---" %}</option>' + data;
+                    levelSelect.disabled = false;
+                });
+        } else {
+            levelSelect.innerHTML = '<option value="">{% trans "--- اختر المرحلة أولاً ---" %}</option>';
+        }
+    });
+
+    levelSelect.addEventListener('change', checkSelections);
+    batchSelect.addEventListener('change', checkSelections);
+    confirmationInput.addEventListener('input', checkSelections);
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">استيراد الطلاب والمواد</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p>قم بتحميل <a href="{% static 'examples/bulk_import_template.xlsx' %}" class="alert-link">ملف القالب</a> وملئه بالبيانات المطلوبة ثم رفعه.</p>
+                        <p>ملاحظات:</p>
+                        <ul>
+                            <li>يجب أن يحتوي الملف على عمودين إلزاميين: كود_الطالب واسم_الطالب</li>
+                            <li>باقي الأعمدة تمثل المواد الدراسية ودرجات الطلاب فيها</li>
+                            <li>سيتم إنشاء المواد تلقائيًا إذا لم تكن موجودة في النظام</li>
+                        </ul>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="level">المستوى</label>
+                            <select name="level" id="level" class="form-control" required>
+                                <option value="">اختر المستوى</option>
+                                {% for level in levels %}
+                                <option value="{{ level.id }}">{{ level.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="excel_file">ملف الإكسيل</label>
+                            <input type="file" name="excel_file" id="excel_file" class="form-control" accept=".xlsx, .xls" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">استيراد</button>
+                        <a href="{% url 'students:student_list' %}" class="btn btn-secondary">إلغاء</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

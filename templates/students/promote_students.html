@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}ترقية الطلاب - نظام إدارة طلاب رواق العلوم الشرعية والعربية{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 mb-0 text-primary fw-bold">
+                <i class="fas fa-level-up-alt me-2"></i>ترقية الطلاب
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'students:dashboard' %}">لوحة التحكم</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">ترقية الطلاب</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'students:dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right"></i> العودة للوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-graduation-cap me-2"></i>ترقية الطلاب
+                    </h5>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4">
+                                {{ form.from_level|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.to_level|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.batch|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-level-up-alt me-2"></i>ترقية الطلاب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>ملاحظات هامة</h5>
+                <ul>
+                    <li>لإكمال جميع نتائج المواد للطلاب في المستوى الذي سيتم ترقيته.</li>
+                    <li>التأكد من صحة النتائج المدخلة من صفحة <a href="{% url 'students:results_list' %}" class="alert-link">عرض النتائج</a>.</li>
+                    <li>لا يمكن ترقية الطلاب الذين لم يتم رصد جميع درجاتهم.</li>
+                </ul>
+                <hr>
+                <p class="mb-0">سيتم ترقية جميع الطلاب الذين نتيجتهم <strong>ناجح ومنقول</strong> أو <strong>منقول بمواد</strong>. فقط ولن يتم ترقية الطلاب الباقين للإعادة.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#id_from_level').addClass('form-select');
+    $('#id_to_level').addClass('form-select');
+    $('#id_batch').addClass('form-control');
+});
+</script>
+{% endblock %} 

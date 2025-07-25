@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}البحث عن النتيجة{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-center bg-primary text-white">
+                    <h3 class="mb-0">البحث عن النتيجة</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="form-group text-center">
+                            <label for="search_query" class="form-label">أدخل رقم الجلوس أو الرقم القومي</label>
+                            <input type="text" class="form-control text-center" id="search_query" name="search_query" value="{{ search_query }}" required>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="submit" class="btn btn-primary">بحث</button>
+                        </div>
+                    </form>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if student_result %}
+                        <div class="result-details mt-4">
+                            <h4 class="text-center mb-4">نتيجة الطالب</h4>
+                            <div class="student-info mb-4">
+                                <p><strong>اسم الطالب:</strong> {{ student_result.student.full_name }}</p>
+                                <p><strong>رقم الجلوس:</strong> {{ student_result.student.current_seat_number }}</p>
+                                <p><strong>المستوى:</strong> {{ student_result.level.name }}</p>
+                                <p><strong>العام الدراسي:</strong> {{ student_result.academic_year }}</p>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>المادة</th>
+                                            <th>الدرجة</th>
+                                            <th>الحالة</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for score in course_scores %}
+                                            <tr>
+                                                <td>{{ score.course.name }}</td>
+                                                <td>{{ score.score }}</td>
+                                                <td class="{{ score.class }}">{{ score.status }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td><strong>المجموع الكلي</strong></td>
+                                            <td colspan="2"><strong>{{ total_score }} من {{ max_total_score }} ({{ percentage }}%)</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

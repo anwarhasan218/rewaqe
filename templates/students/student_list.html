@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}قائمة الطلاب - نظام إدارة طلاب رواق العلوم الشرعية والعربية{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h1 class="h2 mb-0 text-primary fw-bold">قائمة الطلاب</h1>
+        <p class="text-muted">إدارة جميع الطلاب في النظام</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <div class="btn-group me-2" role="group">
+            <a href="{% url 'students:student_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> إضافة طالب
+            </a>
+            <a href="{% url 'students:import_students' %}" class="btn btn-outline-primary">
+                <i class="fas fa-file-import"></i> استيراد
+            </a>
+        </div>
+        <div class="btn-group me-2" role="group">
+            <a href="{% url 'students:export_students' %}" class="btn btn-outline-success">
+                <i class="fas fa-file-export"></i> تصدير
+            </a>
+        </div>
+        {% if students %}
+        <div class="btn-group" role="group">
+            <a href="{% url 'students:delete_all_students' %}" class="btn btn-outline-danger"
+               onclick="return confirm('هل أنت متأكد من الرغبة في حذف جميع الطلاب؟')">
+                <i class="fas fa-trash-alt"></i> حذف الكل
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Filters Section -->
+    <div class="col-lg-3 mb-4">
+        <div class="filter-card" id="filter-container">
+            <h5 class="filter-title"><i class="fas fa-filter"></i> تصفية النتائج</h5>
+            <form method="get" action="{% url 'students:student_list' %}" class="search-form">
+                <div class="mb-3">
+                    <label for="level" class="form-label">المستوى</label>
+                    <select name="level" id="level" class="form-select">
+                        <option value="">-- جميع المستويات --</option>
+                        {% for level in levels %}
+                            <option value="{{ level.id }}" {% if request.GET.level == level.id|stringformat:'i' %}selected{% endif %}>
+                                {{ level.stage.name }} - {{ level.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">حالة القيد</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">-- جميع الحالات --</option>
+                        {% for status_key, status_name in enrollment_statuses %}
+                            <option value="{{ status_key }}" {% if request.GET.status == status_key %}selected{% endif %}>
+                                {{ status_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="q" class="form-label">بحث</label>
+                    <div class="input-group">
+                        <input type="text" name="q" id="q" class="form-control" placeholder="بحث بالاسم أو الكود..." value="{{ request.GET.q }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">تطبيق الفلاتر</button>
+                </div>
+                {% if request.GET.q or request.GET.level or request.GET.status %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'students:student_list' %}" class="btn btn-sm btn-outline-secondary">إعادة ضبط</a>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Students List -->
+    <div class="col-lg-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    الطلاب
+                    {% if request.GET.q %}
+                        <small class="text-muted">(نتائج البحث عن: {{ request.GET.q }})</small>
+                    {% endif %}
+                </h5>
+                <button class="btn btn-sm btn-outline-primary d-lg-none" id="filter-toggle">
+                    <i class="fas fa-filter"></i> الفلاتر
+                </button>
+            </div>
+            <div class="card-body p-0">
+                {% if students %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">الكود</th>
+                                <th>رقم الجلوس</th>
+                                <th>الاسم</th>
+                                <th>المستوى</th>
+                                <th>حالة القيد</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td class="ps-4">{{ student.code }}</td>
+                                <td>{{ student.current_seat_number }}</td>
+                                <td>{{ student.full_name }}</td>
+                                <td>
+                                    <span class="badge bg-secondary me-1">{{ student.level.stage.name }}</span>
+                                    <span class="badge bg-light text-dark">{{ student.level.name }}</span>
+                                </td>
+                                <td>
+                                    {% if student.enrollment_status == 'مستجد' %}
+                                        <span class="badge bg-success">{{ student.enrollment_status }}</span>
+                                    {% elif student.enrollment_status == 'منقول' %}
+                                        <span class="badge bg-info text-dark">{{ student.enrollment_status }}</span>
+                                    {% elif student.enrollment_status == 'منقول بمواد' %}
+                                        <span class="badge bg-warning text-dark">{{ student.enrollment_status }}</span>
+                                    {% elif student.enrollment_status == 'باقي للإعادة' %}
+                                        <span class="badge bg-danger">{{ student.enrollment_status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'students:student_detail' student.id %}" class="btn btn-sm btn-outline-primary me-1 mb-1 mb-md-0">
+                                        <i class="fas fa-eye"></i> عرض
+                                    </a>
+                                    <a href="{% url 'students:student_edit' student.id %}" class="btn btn-sm btn-outline-secondary me-1 mb-1 mb-md-0">
+                                        <i class="fas fa-edit"></i> تعديل
+                                    </a>
+                                    <a href="{% url 'students:student_delete' student.id %}" class="btn btn-sm btn-outline-danger btn-delete mb-1 mb-md-0">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <div class="p-3">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if num == page_obj.number %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.level %}&level={{ request.GET.level }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-4 text-muted">
+                        <i class="fas fa-search fa-4x"></i>
+                    </div>
+                    <h5>لا توجد نتائج</h5>
+                    <p class="text-muted">
+                        {% if request.GET.q or request.GET.level or request.GET.status %}
+                            لم يتم العثور على طلاب مطابقين لمعايير البحث.
+                            <a href="{% url 'students:student_list' %}" class="text-decoration-none">إعادة ضبط الفلاتر</a>
+                        {% else %}
+                            لا يوجد طلاب مسجلين في النظام حاليًا.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'students:student_add' %}" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus-circle"></i> إضافة طالب جديد
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var filterToggle = document.getElementById('filter-toggle');
+        var filterContainer = document.getElementById('filter-container');
+
+        if (filterToggle && filterContainer) {
+            // Hide filters on mobile by default
+            if (window.innerWidth < 992) {
+                filterContainer.classList.add('d-none');
+            }
+
+            filterToggle.addEventListener('click', function() {
+                filterContainer.classList.toggle('d-none');
+            });
+        }
+    });
+</script>
+{% endblock %}
